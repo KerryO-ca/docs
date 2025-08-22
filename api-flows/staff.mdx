@@ -7,11 +7,11 @@ description: "This procedure describes the API flow for a restaurant staff membe
 
 The order arrives at the restaurant's display system for the staff to view. The expeditor is responsible for picking up the new orders.
 
-Send an HTTP request that filters for `Received` orders from the current day, along with table number (if applicable), status, priority, and dishes.
+### Request
+
+The client sends an HTTP request that filters for `Received` orders from the current day, along with table number (if applicable), status, priority, and dishes.
 
 In this example, the date is Jan 1st, 2025.
-
-### Request
 
 ```
 curl -X GET "{serverURL}orders?filter=status.eq~Received|created_at.gte~2025-01-01&fields=table_number|status|priority|dish_ids"
@@ -48,15 +48,17 @@ The response includes the status code `200 OK`, along with the dishes that were 
 
 ## Step 2. Prioritization
 
-In this step, the expeditor can change the priority from the default if needed (5 --\> lowest priority, 1 --\> highest priority), putting in an HTTP request to update an order if needed. In the request, change the priority.
+In this step, the expeditor can change the priority from the default if needed (5 --\> lowest priority, 1 --\> highest priority).
 
 ### Request
+
+The client sends an HTTP request to update an order if needed.
 
 ```
 curl -X PUT "{serverURL}orders/{order id}"
 ```
 
-In the response body, change the priority to 1:
+The priority is changed to `1`:
 
 ```
 {
@@ -73,7 +75,7 @@ In the response body, change the priority to 1:
 
 ### Response
 
-If successful, the server responds with a `200 OK` status code and the response body contains the updated priority.
+The server responds with a `200 OK` status code and the response body contains the updated priority.
 
 ```
 {
@@ -96,15 +98,15 @@ If successful, the server responds with a `200 OK` status code and the response 
 
 The expeditor initiates the preparation of the order by changing the order's status.
 
-To do so, send an HTTP request to update the order status from `Received` to `In Progress`.
-
 ### Request
+
+The client sends an HTTP request to update the order status from `Received` to `In Progress`.
 
 ```
 curl -X PUT "{serverURL}orders/{id}
 ```
 
-In the response body, change the status to In Progress.
+The status is changed to `In Progress`.
 
 ```
  {
@@ -144,17 +146,15 @@ The server responds with a `200 OK` status code, and the response body contains 
 
 Each dish in the order is assigned to its station, and the station staff is alerted to work on their part of the order.
 
-The client sends an HTTP request, filtering the response to only include dishes that belong to the appropriate station.
-
 ### Request
 
-per class - want to filter the response to only include a specific station, query string to filter on the station e.g. hot & only want to retrieve certain fields like dish ID & name
+The client sends an HTTP request, filtering the response to only include dishes that belong to the appropriate station.
 
 ```
 curl -X GET "{serverURL}orders/{id}?fields=dish_ids|name|image_name"
 ```
 
-Note: I could not figure out how to get the station filter to work\! Kept getting a "400 bad request" & unknown query parameter "filter".
+_Note: I could not figure out how to get the station filter to work\! Getting a "400 bad request" & unknown query parameter "filter"._
 
 ### Response
 
@@ -179,7 +179,7 @@ The client sends a request to display the full ingredients for the dish.
 
 ### Request
 
-The request includes the dish ID and asks to return the ingredient names. 
+The HTTP request includes the dish ID and asks to return the ingredient names.
 
 ```
 curl -X GET "{serverURL}dishes/{id}/ingredients?fields=name"
@@ -213,19 +213,17 @@ When all parts are ready, the expeditor is notified via the kitchen process (not
 
 ## Step 7. Order assembly
 
-The expeditor assembles the order and updates the order status to On the Way.
-
-The client sends an HTTP request to change the status from `In Progress` to `On the Way` (or `Ready for Pickup` if that applies).
-
-from video - you can see example at 1.30 of the video where he pasted the command into the slide by mistake.
+The expeditor assembles the order and updates the order status to `On the Way`.
 
 ### Request
+
+The client sends an HTTP request to change the status from `In Progress` to `On the Way` (or `Ready for Pickup` if that applies).
 
 ```
 curl -X PUT "{serverURL}orders/{id}
 ```
 
-In the request body, change the status to `Ready for Pickup`.
+The status is changed to `Ready for Pickup`.
 
 ```
 {
