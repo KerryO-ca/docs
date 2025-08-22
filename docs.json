@@ -54,12 +54,11 @@
             "group": "API flows",
             "pages": [
               "patron",
-              "staff",
+              "staff"
             ]
           }
         ]
-      }
-    ],
+      },
       {
         "tab": "API reference",
         "groups": [
