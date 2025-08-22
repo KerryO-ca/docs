@@ -1,0 +1,201 @@
+---
+title: "Patron API Flow"
+description: "This procedure describes the API flow for a restaurant patron."
+---
+
+## Step 1. Customer starts browsing
+
+The customer looks through the online menu to figure out what she wants, clicking on a food category to view.
+
+### Request
+
+The client sends an HTTP request to retrieve all the dishes within the selected category.
+
+In this example, the customer makes a selection on the user interface to view all the desserts. This example request includes sorting by name.
+
+```
+curl -X GET "{server URL}dishes?sort=name&filter=category.eq~Dessert"
+```
+
+### Response
+
+If the response was successful, the server responds with a `200 OK` status code, with the response body containing the dishes within the selected category.
+
+This example shows the beginning of the response and the first dessert.
+
+```
+{
+  "results": [
+    {
+      "id": "687da8369ce1fe0521c94afb",
+      "created_at": "2025-03-21T21:19:42.398Z",
+      "updated_at": "2025-07-20T08:32:16.944Z",
+      "name": "Tiramisu",
+      "description": "A classic Italian dessert made with coffee-soaked ladyfingers, mascarpone cheese, and cocoa powder.",
+      "category": "Dessert",
+      "preparation_time": 60,
+      "price": 399,
+      "image_name": "tiramisu",
+      "station": "cold",
+      "ingredients": [
+        {
+          "ingredient_id": "687da8369ce1fe0521c94a91",
+          "is_essential": true,
+          "_id": "687da8369ce1fe0521c94afc"
+        },
+        {
+          "ingredient_id": "687da8369ce1fe0521c94a71",
+          "is_essential": false,
+          "_id": "687da8369ce1fe0521c94afd"
+        },
+        {
+          "ingredient_id": "687da8369ce1fe0521c94a85",
+          "is_essential": false,
+          "_id": "687da8369ce1fe0521c94afe"
+        },
+        {
+          "ingredient_id": "687da8369ce1fe0521c94a7f",
+          "is_essential": true,
+          "_id": "687da8369ce1fe0521c94aff"
+        },
+        {
+          "ingredient_id": "687da8369ce1fe0521c94a80",
+          "is_essential": false,
+          "_id": "687da8369ce1fe0521c94b00"
+        }
+      ]
+    },
+```
+
+This response means that the customer can view the dishes within the selected category, but before the customer can view the dishes, the client needs to check the availability of ingredients/quantities.
+
+The client saves the results of this query to use for the next step.
+
+## Step 2. Client checks ingredients/quantities
+
+The API client needs to check on the availability of ingredients to filter out any dishes that cannot be made at this time. Each dish references the list of ingredient IDs and distinguishes between essential and non-essential ingredients, presenting only the dishes for which the essential ingredients are available.
+
+### Request
+
+The client sends an HTTP request to check the each ingredient, filtering to include the names and quantities.
+
+```
+curl -X GET "{serverURL}ingredients/{ingredient id}/?fields=name|in_stock_qty"
+```
+
+### Response
+
+If the request was successful, the server responds with a `200 OK` status code. The response body contains the ingredient and a quantity.
+
+The desserts are presented for selection as long as the essential ingredients are available.
+
+If ingredients are unavailable, the dessert does not appear on the online menu.
+
+```
+{
+  "results": [
+    {
+      "id": "687da8369ce1fe0521c94a89",
+      "name": "Cream",
+      "in_stock_qty": 4
+    },
+```
+
+## Step 3. View dish details
+
+The customer selects a dish from the list to view more details about it.
+
+The client retrieves details for the selected dish.
+
+### Request
+
+```
+curl -X GET "{serverURL}dishes/{dish id}"
+```
+
+### Response
+
+If the request was successful, the server responds with a `200 OK` status code. The response body contains the name, description, and price.
+
+On the user interface, the customer can read more details about the dessert.
+
+```
+{
+  "id": "687da8369ce1fe0521c94afb",
+  "created_at": "2025-03-21T21:19:42.398Z",
+  "updated_at": "2025-07-20T08:32:16.944Z",
+  "name": "Tiramisu",
+  "description": "A classic Italian dessert made with coffee-soaked ladyfingers, mascarpone cheese, and cocoa powder.",
+  "category": "Dessert",
+  "price": 399,
+  "preparation_time": 60,
+  "image_name": "tiramisu",
+  "station": "cold",
+  "ingredients": [
+    {
+      "ingredient_id": "687da8369ce1fe0521c94a91",
+      "is_essential": true,
+      "_id": "687da8369ce1fe0521c94afc"
+    },
+    {
+      "ingredient_id": "687da8369ce1fe0521c94a71",
+      "is_essential": false,
+      "_id": "687da8369ce1fe0521c94afd"
+    },
+    {
+      "ingredient_id": "687da8369ce1fe0521c94a85",
+      "is_essential": false,
+      "_id": "687da8369ce1fe0521c94afe"
+    },
+    {
+      "ingredient_id": "687da8369ce1fe0521c94a7f",
+      "is_essential": true,
+      "_id": "687da8369ce1fe0521c94aff"
+    },
+    {
+      "ingredient_id": "687da8369ce1fe0521c94a80",
+      "is_essential": false,
+      "_id": "687da8369ce1fe0521c94b00"
+    }
+```
+
+## Step 4. Adding dishes and viewing the cart
+
+The customer makes selections, adding their choices to the cart on the user interface, and then views the selections and the total cost.
+
+## Step 5. Placing the order
+
+After the customer has selected dish(es) and confirms, the order is kicked off.
+
+### Request
+
+The client sends an HTTP request to retreive the dishes that the customer selected.
+
+```
+curl -X POST '{serverURL}orders'
+```
+
+### Response
+
+If the request was successful, the server responds with a `201 Created` status code and response body containing information about the order.
+
+```
+"id": "68a78c19f662ce2a39d552fe",
+    "created_at": "2025-08-21T21:14:01.525Z",
+    "updated_at": "2025-08-21T21:14:01.525Z",
+    "scheduled_at": null,
+    "table_number": 18,
+    "status": "Received",
+    "priority": 3,
+    "dish_ids": [
+        "687da8369ce1fe0521c94aa5"
+    ],
+    "special_requests": "No peanuts"
+}
+```
+
+## Step 6. Confirming the order
+
+The order is confirmed/the customer receives a confirmation, and the order details are sent to the restaurant staff, where they will start filling the order.
+
+For details on the staff API flow, see the [Staff API flow](/api-flows/staff).

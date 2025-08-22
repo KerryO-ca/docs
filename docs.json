@@ -48,6 +48,19 @@
         ]
       },
       {
+        "tab": "API flows",
+        "groups": [
+          {
+            "group": "API flows",
+            "pages": [
+              "patron",
+              "staff",
+            ]
+          }
+        ]
+      }
+    ],
+      {
         "tab": "API reference",
         "groups": [
           {
